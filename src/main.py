@@ -1,9 +1,8 @@
-import random
 import sys
 
-from PySide6 import QtWidgets, QtCore
+from PySide6 import QtWidgets
 
-from src.main_page import MainPage
+from src.pages.main_page import MainPage
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
