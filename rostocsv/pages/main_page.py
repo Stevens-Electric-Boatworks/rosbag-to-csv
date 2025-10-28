@@ -14,14 +14,15 @@ def label_from_text(text:str) -> QtWidgets.QLabel:
     return widget
 
 class MainPage(QtWidgets.QWidget):
-
-
-
     def __init__(self):
         super().__init__()
-        self.export_button:QtWidgets.QPushButton = None
+        self.analysis_container_layout = None
+        self.analysis_container = None
+        self.export_container = None
+        self.export_container_layout = None
         self.selection = []
         self.dir = ""
+        self.export_button = None
         main_layout = QtWidgets.QVBoxLayout(self)
 
         # === Scroll Area ===
@@ -73,6 +74,7 @@ class MainPage(QtWidgets.QWidget):
         self.import_button = QtWidgets.QPushButton("Import ROSBag Directory")
         self.scroll_layout.addWidget(self.import_button)
         self.import_button.clicked.connect(self.import_file)
+        self.scroll_layout.addStretch()
 
     @QtCore.Slot()
     def import_file(self):
@@ -81,7 +83,19 @@ class MainPage(QtWidgets.QWidget):
         self.create_dropdown(result)
 
     def create_dropdown(self, analysis_result:ROSAnalysisResult):
-        self.scroll_layout.addWidget(label_from_text("""
+        if self.analysis_container is not None:
+            print("Destroying OLD!")
+            self.analysis_container.setParent(None)
+            self.analysis_container.destroy()
+        self.analysis_container = QtWidgets.QWidget()
+        self.analysis_container_layout = QtWidgets.QVBoxLayout(self.analysis_container)
+        if self.export_container is not None:
+            print("Destroying OLD export!!")
+            self.export_container.setParent(None)
+            self.export_container.destroy()
+
+
+        self.analysis_container_layout.addWidget(label_from_text("""
         <p><h3>Please select the topics and data you want exported into a CSV file.</h3></p>
         """))
         self.tree = QtWidgets.QTreeWidget()
@@ -100,19 +114,25 @@ class MainPage(QtWidgets.QWidget):
 
         self.tree.setHeaderHidden(True)
         self.tree.itemChanged.connect(self.on_item_changed)
-        self.scroll_layout.addWidget(self.tree)
-        self.scroll_layout.addStretch()
-        self.import_button.setDisabled(True)
+
+        self.analysis_container_layout.addWidget(self.tree)
+        self.analysis_container_layout.addStretch()
 
         self.export_button = QtWidgets.QPushButton("Export as CSV")
-        self.scroll_layout.addWidget(self.export_button)
+        self.analysis_container_layout.addWidget(self.export_button)
+        self.analysis_container_layout.addStretch()
         self.export_button.clicked.connect(self.export_to_csv)
 
+        self.scroll_layout.addWidget(self.analysis_container)
     def export_to_csv(self):
         export_dir = str(QFileDialog.getExistingDirectory(self, "Select Export Directory"))
-
-
+        result_file = ros_bag_utils.export(self.dir, self.get_selected_topics(), export_dir)
+        self.export_container = QtWidgets.QWidget()
+        self.export_container_layout = QtWidgets.QVBoxLayout(self.export_container)
+        self.export_container_layout.addWidget(label_from_text(f"<h3>It was exported to {result_file}</h3>"))
+        self.export_container_layout.addStretch()
         self.export_button.setDisabled(True)
+        self.scroll_layout.addWidget(self.export_container)
 
 
     def on_item_changed(self, item, column):
@@ -153,7 +173,6 @@ class MainPage(QtWidgets.QWidget):
                 recurse(top, top.text(0))
 
         return selected
-
 
 
 

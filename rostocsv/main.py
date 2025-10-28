@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     widget = MainPage()
     widget.setWindowTitle("ROS2 Bag to CSV")
-    widget.resize(800, 600)
+    widget.resize(800, 700)
     widget.show()
 
     sys.exit(app.exec())
