@@ -22,7 +22,9 @@ class MainPage(QtWidgets.QWidget):
         self.export_container_layout = None
         self.selection = []
         self.dir = ""
+        self.ros_def_file = None
         self.export_button = None
+        self.ros_def_file_button = None
         main_layout = QtWidgets.QVBoxLayout(self)
 
         # === Scroll Area ===
@@ -52,7 +54,7 @@ class MainPage(QtWidgets.QWidget):
             <h1>Contact</h1>
             <p><b>Ishaan Sayal</b><br>
             <a href="https://github.com/EmeraldWither">github.com/EmeraldWither</a><br>
-            Email: isayal@stevens.org</p>
+            Email: isayal@stevens.edu</p>
             </div>""")
         self.scroll_layout.addWidget(contact)
         line = QtWidgets.QFrame()
@@ -63,6 +65,7 @@ class MainPage(QtWidgets.QWidget):
         getting_started = label_from_text("""
         <div style="line-height: 1;">
             <h1>Getting Started</h1>
+            <p><b>0) If you are NOT on a properly sourced ROS workspace, please import a ROS definition file (this must be provided to you by someone who has generated one using this software in a ROS workspace)</b></p>
             <p>1) <b>Import the ROS2 bag folder. Please note that you must import the full folder WITH metadata and .mcap db.</b> <br><br>
             2) <b>Select the desired ROS2 data sets</b><br>
                 e.g) "/electrical/temp_sensors/out.outlet_temp"<br><br>
@@ -74,12 +77,24 @@ class MainPage(QtWidgets.QWidget):
         self.import_button = QtWidgets.QPushButton("Import ROSBag Directory")
         self.scroll_layout.addWidget(self.import_button)
         self.import_button.clicked.connect(self.import_file)
+
+        self.ros_def_file_button = QtWidgets.QPushButton("Import ROS Definition File")
+        self.scroll_layout.addWidget(self.ros_def_file_button)
+        self.ros_def_file_button.clicked.connect(self.import_ros_def_file)
         self.scroll_layout.addStretch()
+
+    @QtCore.Slot()
+    def import_ros_def_file(self):
+        self.ros_def_file = str(QFileDialog.getOpenFileName(self, "Select ROS Definition File", "", "ROS Definition File (*.rosdef)")[0])
+        if self.ros_def_file == "":
+            return
+        self.ros_def_file_button.setText(f"Imported {self.ros_def_file}!")
+
 
     @QtCore.Slot()
     def import_file(self):
         self.dir = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-        result = ros_bag_utils.get_topics(self.dir, True)
+        result = ros_bag_utils.get_topics(self.dir, self.ros_def_file)
         self.create_dropdown(result)
 
     def create_dropdown(self, analysis_result:ROSAnalysisResult):

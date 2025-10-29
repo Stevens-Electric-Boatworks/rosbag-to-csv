@@ -19,7 +19,7 @@ def save_ros_def_file():
 
     json_file = json.dumps(defs)
     print(json_file)
-    with open("ros_def_test.json", 'w') as file:
+    with open("ros_def_test.rosdef", 'w') as file:
         file.write(json_file)
 
 

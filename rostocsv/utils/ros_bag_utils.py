@@ -7,13 +7,13 @@ import yaml
 from mcap.exceptions import DecoderNotFoundError
 from mcap.reader import make_reader
 from mcap_ros2.reader import read_ros2_messages
-from rosidl_runtime_py.utilities import get_message
 
 
 class ROSAnalysisResult:
 
     def __init__(self, topics):
         self.topics = topics
+
 
 def _get_bag_mcap_file(bag_file_dir):
     try:
@@ -26,7 +26,8 @@ def _get_bag_mcap_file(bag_file_dir):
     except yaml.YAMLError as exc:
         print(f"Error parsing YAML: {exc}")
 
-def get_topics(bag_file_dir, use_cache_file) -> ROSAnalysisResult:
+
+def get_topics(bag_file_dir, cache_file) -> ROSAnalysisResult:
     try:
         with open(f'{bag_file_dir}/metadata.yaml', 'r') as file:
             metadata = yaml.safe_load(file)
@@ -37,11 +38,13 @@ def get_topics(bag_file_dir, use_cache_file) -> ROSAnalysisResult:
             if name in ("/events/write_split", "/parameter_events"):
                 continue
             try:
-                if not use_cache_file:
+                if cache_file is None:
                     print("Attempting to load from the ROS workspace")
+                    from rosidl_runtime_py.utilities import get_message
                     msg = get_message(type_str).get_fields_and_field_types()
                 else:
-                    file = open("utils/ros_def_test.json", 'r')
+                    print("Attempting to load from the ros_def_file")
+                    file = open("utils/ros_def_test.rosdef", 'r')
                     data = json.load(file)
                     msg = data[type_str]
                 result[name] = msg
@@ -52,7 +55,6 @@ def get_topics(bag_file_dir, use_cache_file) -> ROSAnalysisResult:
         print("Error: config.yaml not found.")
     except yaml.YAMLError as exc:
         print(f"Error parsing YAML: {exc}")
-
 
 
 def export(bag_file_dir, topics, export_dir) -> str:
