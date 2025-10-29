@@ -20,7 +20,6 @@ class MainPage(QtWidgets.QWidget):
         self.analysis_container = None
         self.export_container = None
         self.export_container_layout = None
-        self.selection = []
         self.dir = ""
         self.ros_def_file = None
         self.export_button = None
@@ -90,6 +89,8 @@ class MainPage(QtWidgets.QWidget):
         except ImportError:
             self.export_rosdef_button.setDisabled(True)
             self.export_rosdef_button.setText("Export ROS Definition File (Not Supported in this Environment)")
+            self.import_button.setDisabled(True)
+            self.import_button.setText("Import ROSBag Directory (You must import a ROS Definition File first)")
             pass
 
         self.scroll_layout.addStretch()
@@ -109,6 +110,9 @@ class MainPage(QtWidgets.QWidget):
         if self.ros_def_file == "":
             return
         self.ros_def_file_button.setText(f"Imported {self.ros_def_file}!")
+        self.import_button.setDisabled(False)
+        self.import_button.setText("Import ROSBag Directory")
+        self.destory_old()
 
 
     @QtCore.Slot()
@@ -117,7 +121,7 @@ class MainPage(QtWidgets.QWidget):
         result = ros_bag_utils.get_topics(self.dir, self.ros_def_file)
         self.create_dropdown(result)
 
-    def create_dropdown(self, analysis_result:ROSAnalysisResult):
+    def destory_old(self):
         if self.analysis_container is not None:
             print("Destroying OLD!")
             self.analysis_container.setParent(None)
@@ -129,7 +133,8 @@ class MainPage(QtWidgets.QWidget):
             self.export_container.setParent(None)
             self.export_container.destroy()
 
-
+    def create_dropdown(self, analysis_result:ROSAnalysisResult):
+        self.destory_old()
         self.analysis_container_layout.addWidget(label_from_text("""
         <p><h3>Please select the topics and data you want exported into a CSV file.</h3></p>
         """))
