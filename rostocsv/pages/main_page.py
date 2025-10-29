@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QFileDialog
 
 from utils import ros_bag_utils
 from utils.ros_bag_utils import ROSAnalysisResult
+from utils.ros_def_utils import save_ros_def_file
 
 
 def label_from_text(text:str) -> QtWidgets.QLabel:
@@ -65,7 +66,8 @@ class MainPage(QtWidgets.QWidget):
         getting_started = label_from_text("""
         <div style="line-height: 1;">
             <h1>Getting Started</h1>
-            <p><b>0) If you are NOT on a properly sourced ROS workspace, please import a ROS definition file (this must be provided to you by someone who has generated one using this software in a ROS workspace)</b></p>
+            <p>0) <b>If you are NOT on a properly sourced ROS workspace, please import a ROS definition file (this must be provided to you by someone who has generated one using this software in a ROS workspace)</b></p>
+            <p>If you are sourced by a ROS workspace and wish to export this file, click on "Export ROS Definition" (will only appear if properly sourced with ROS), and pick your export directory.</p>
             <p>1) <b>Import the ROS2 bag folder. Please note that you must import the full folder WITH metadata and .mcap db.</b> <br><br>
             2) <b>Select the desired ROS2 data sets</b><br>
                 e.g) "/electrical/temp_sensors/out.outlet_temp"<br><br>
@@ -81,7 +83,25 @@ class MainPage(QtWidgets.QWidget):
         self.ros_def_file_button = QtWidgets.QPushButton("Import ROS Definition File")
         self.scroll_layout.addWidget(self.ros_def_file_button)
         self.ros_def_file_button.clicked.connect(self.import_ros_def_file)
+        self.export_rosdef_button = QtWidgets.QPushButton("Export ROS Definition File")
+        self.export_rosdef_button.clicked.connect(self.export_rosdef)
+        self.scroll_layout.addWidget(self.export_rosdef_button)
+        try:
+            __import__("rosidl_runtime_py")
+        except ImportError:
+            self.export_rosdef_button.setDisabled(True)
+            self.export_rosdef_button.setText("Export ROS Definition File (Not Supported in this Environment)")
+            pass
+
         self.scroll_layout.addStretch()
+
+    @QtCore.Slot()
+    def export_rosdef(self):
+        self.dir = str(QFileDialog.getExistingDirectory(self, "Select Export Directory"))
+        if self.dir == "":
+            return
+        result = save_ros_def_file(self.dir)
+        self.export_rosdef_button.setText(f"Exported to {result}!")
 
     @QtCore.Slot()
     def import_ros_def_file(self):

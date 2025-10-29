@@ -44,7 +44,7 @@ def get_topics(bag_file_dir, cache_file) -> ROSAnalysisResult:
                     msg = get_message(type_str).get_fields_and_field_types()
                 else:
                     print("Attempting to load from the ros_def_file")
-                    file = open("utils/ros_def_test.rosdef", 'r')
+                    file = open(cache_file, 'r')
                     data = json.load(file)
                     msg = data[type_str]
                 result[name] = msg

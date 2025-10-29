@@ -1,12 +1,15 @@
 import importlib
 import json
+from datetime import datetime
 
 import rosidl_runtime_py
 from rosidl_runtime_py import get_interface_packages, get_message_interfaces, message_to_ordereddict
 from rosidl_runtime_py.utilities import get_message
 
 
-def save_ros_def_file():
+def save_ros_def_file(export_dir):
+    t = datetime.now()
+    file_name = f"{export_dir}/rosdef_export_{t.month}_{t.day}_{t.year}__{t.hour}_{t.minute}_{t.second}.rosdef"
     # Get all interface packages
     packages = get_interface_packages()
     msg_pkgs = get_message_interfaces(packages.keys())
@@ -19,8 +22,6 @@ def save_ros_def_file():
 
     json_file = json.dumps(defs)
     print(json_file)
-    with open("ros_def_test.rosdef", 'w') as file:
+    with open(file_name, 'w') as file:
         file.write(json_file)
-
-
-save_ros_def_file()
+    return file_name
