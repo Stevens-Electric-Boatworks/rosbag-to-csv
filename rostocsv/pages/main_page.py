@@ -3,7 +3,6 @@ from PySide6.QtWidgets import QFileDialog
 
 from utils import ros_bag_utils
 from utils.ros_bag_utils import ROSAnalysisResult
-from utils.ros_def_utils import save_ros_def_file
 
 
 def label_from_text(text:str) -> QtWidgets.QLabel:
@@ -100,6 +99,7 @@ class MainPage(QtWidgets.QWidget):
         self.dir = str(QFileDialog.getExistingDirectory(self, "Select Export Directory"))
         if self.dir == "":
             return
+        from utils.ros_def_utils import save_ros_def_file
         result = save_ros_def_file(self.dir)
         self.export_rosdef_button.setText(f"Exported to {result}!")
 
