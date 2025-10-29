@@ -79,7 +79,7 @@ class MainPage(QtWidgets.QWidget):
     @QtCore.Slot()
     def import_file(self):
         self.dir = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-        result = ros_bag_utils.get_topics(self.dir)
+        result = ros_bag_utils.get_topics(self.dir, True)
         self.create_dropdown(result)
 
     def create_dropdown(self, analysis_result:ROSAnalysisResult):

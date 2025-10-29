@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -25,7 +26,7 @@ def _get_bag_mcap_file(bag_file_dir):
     except yaml.YAMLError as exc:
         print(f"Error parsing YAML: {exc}")
 
-def get_topics(bag_file_dir) -> ROSAnalysisResult:
+def get_topics(bag_file_dir, use_cache_file) -> ROSAnalysisResult:
     try:
         with open(f'{bag_file_dir}/metadata.yaml', 'r') as file:
             metadata = yaml.safe_load(file)
@@ -36,7 +37,13 @@ def get_topics(bag_file_dir) -> ROSAnalysisResult:
             if name in ("/events/write_split", "/parameter_events"):
                 continue
             try:
-                msg = get_message(type_str).get_fields_and_field_types()
+                if not use_cache_file:
+                    print("Attempting to load from the ROS workspace")
+                    msg = get_message(type_str).get_fields_and_field_types()
+                else:
+                    file = open("utils/ros_def_test.json", 'r')
+                    data = json.load(file)
+                    msg = data[type_str]
                 result[name] = msg
             except Exception as e:
                 print(f"Could not load {type_str}: {e}")
